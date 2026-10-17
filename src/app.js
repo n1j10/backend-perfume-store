@@ -18,6 +18,8 @@ if (config.env === "development") app.use(morgan("dev"));
 // Reads the Clerk session token so getAuth(req) works in auth.middleware.
 app.use(clerkMiddleware());
 
+app.get("/", (req, res) => res.json({ status: "ok", api: "/api", health: "/api/health" }));
+
 app.use("/api", routes);
 
 app.use(notFound);

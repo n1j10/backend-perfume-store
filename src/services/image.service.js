@@ -2,6 +2,7 @@ const crypto = require("node:crypto");
 const path = require("node:path");
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const config = require("../config");
+const { extensionFor } = require("../middlewares/upload.middleware");
 const ApiError = require("../utils/ApiError");
 
 // Port of utils/neon-storage.ts: images are stored in Neon Storage (S3 compatible).
@@ -28,7 +29,7 @@ const getClient = () => {
 };
 
 const uploadImage = async (file) => {
-  const key = `${Date.now()}-${crypto.randomUUID()}${path.extname(file.originalname).toLowerCase()}`;
+  const key = `${Date.now()}-${crypto.randomUUID()}${extensionFor(file.mimetype)}`;
 
   await getClient().send(
     new PutObjectCommand({

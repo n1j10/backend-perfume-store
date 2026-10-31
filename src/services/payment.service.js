@@ -59,10 +59,14 @@ const confirm = async (paymentId) => {
   const qiPayment = await qicardService.getPaymentStatus(paymentId);
   const status = qiPayment.status.toUpperCase();
 
-  const payment = await paymentModel.settle(paymentId, { status, details: qiPayment.details });
+  const payment = await paymentModel.settle(paymentId, {
+    status,
+    amount: qiPayment.amount,
+    details: qiPayment.details,
+  });
   if (!payment) throw ApiError.notFound("عملية الدفع غير موجودة");
 
-  return status;
+  return Number(qiPayment.amount) === payment.amount ? status : "AMOUNT_MISMATCH";
 };
 
 // Used by the callback: any problem simply means "failed" for the user.

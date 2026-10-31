@@ -22,11 +22,15 @@ const findPending = (orderId) =>
 
 // One transaction, so the order is never marked as paid twice.
 // On success: mark the order as paid and delete the cart that was bought.
-const settle = (paymentId, { status, details }) =>
+const settle = (paymentId, { status: reportedStatus, amount, details }) =>
   prisma.$transaction(
     async (tx) => {
       const payment = await tx.qiCardPayment.findUnique({ where: { paymentId } });
       if (!payment || payment.status === SUCCESS) return payment;
+
+      // Amount tampering guard: a SUCCESS for a different amount is not a valid payment.
+      const status =
+        reportedStatus === SUCCESS && Number(amount) !== payment.amount ? "AMOUNT_MISMATCH" : reportedStatus;
 
       await tx.qiCardPayment.update({
         where: { id: payment.id },

@@ -5,7 +5,9 @@ const paymentService = require("../services/payment.service");
 
 // QiCard sends the user's browser here after the payment page.
 const callback = asyncHandler(async (req, res) => {
-  const { paymentId, orderId } = req.query;
+  // Only accept plain strings (Express can parse ?a[]=… into arrays/objects).
+  const paymentId = typeof req.query.paymentId === "string" ? req.query.paymentId : undefined;
+  const orderId = typeof req.query.orderId === "string" ? req.query.orderId : undefined;
   const isSuccess = await paymentService.isSuccessful(paymentId);
 
   const resultUrl = new URL("/payment-result", config.clientUrl);

@@ -1,7 +1,54 @@
-# Book Store API (Express)
+<div align="center">
 
-REST API ported from the Next.js server actions in
-[`utils/actions`](https://github.com/n1j10/book-store/tree/main/utils/actions).
+# 🌸 Perfume Store API
+
+### E-commerce REST API with Clerk auth and QiCard card payments
+
+![Node.js](https://img.shields.io/badge/Node.js-24-5FA04E?style=for-the-badge&logo=nodedotjs&logoColor=white) ![Express](https://img.shields.io/badge/Express-4-000000?style=for-the-badge&logo=express&logoColor=white) ![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?style=for-the-badge&logo=prisma&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-DB-4169E1?style=for-the-badge&logo=postgresql&logoColor=white) ![Zod](https://img.shields.io/badge/Zod-validation-3E67B1?style=for-the-badge&logo=zod&logoColor=white) ![Clerk](https://img.shields.io/badge/Clerk-Auth-6C47FF?style=for-the-badge&logo=clerk&logoColor=white) ![S3](https://img.shields.io/badge/S3-storage-569A31?style=for-the-badge&logo=amazons3&logoColor=white) ![Vercel](https://img.shields.io/badge/Vercel-deployed-000000?style=for-the-badge&logo=vercel&logoColor=white)
+
+**[📦 Source](https://github.com/n1j10/backend-perfume-store)**
+
+</div>
+
+---
+
+## ✨ Overview
+
+A REST API for a perfume store with **Clerk** authentication and **QiCard** online payments. Images are stored on **Neon Object Storage** (S3-compatible).
+
+The code follows a **layered architecture** (routes → middlewares → controllers → services → models → Prisma), which keeps business logic testable and keeps controllers out of the database. It runs as a normal server locally and as a **Vercel serverless function** in production (`api/index.js`).
+
+```mermaid
+flowchart LR
+  C[Client] --> MW[helmet · CORS · rate limit]
+  MW --> R[routes]
+  R --> V[validate · Zod]
+  V --> A[auth]
+  A --> CT[controllers]
+  CT --> S[services]
+  S --> M[models]
+  M --> DB[(PostgreSQL)]
+  S --> PG[QiCard]
+  S --> ST[Neon Storage (S3)]
+```
+
+## 🔐 Security
+
+Security was designed in from the start:
+
+| Area | Implementation |
+| --- | --- |
+| Authentication | Clerk session tokens verified by `@clerk/express`. The admin is identified by `ADMIN_USER_ID`, and CORS is restricted to the client origin |
+| Rate limiting | Global limit of 300 requests per minute per IP |
+| Uploads | Explicit image MIME allow-list (JPEG, PNG, WebP, GIF, AVIF; **SVG is rejected**), 1 MB limit, server-generated file names and extensions |
+| Validation | Zod validates body, query and params; cart quantities must be 1–100 |
+| Hardening | `helmet` headers, body size limits, `trust proxy` for correct client IPs, `X-Powered-By` disabled |
+| Error handling | One central error handler; internal errors are never shown to clients in production |
+| Payments | Status **and amount** are confirmed with QiCard server-to-server; neither the browser nor the webhook body is trusted. Optional RSA signature, and settlement is Serializable and idempotent |
+
+> Secrets are stored only in environment variables. `.env*` is git-ignored, and `.env.example` contains placeholders only.
+
+---
 
 ## Layers
 
@@ -127,3 +174,11 @@ Fixes made while porting:
 ```bash
 npm test
 ```
+
+## 👤 Author
+
+**n1j10**, full-stack engineer (Next.js · TypeScript · Node.js · PostgreSQL)
+
+[![GitHub](https://img.shields.io/badge/GitHub-n1j10-181717?style=for-the-badge&logo=github)](https://github.com/n1j10)
+
+> If you find this project useful, a ⭐ on the repo is appreciated.
